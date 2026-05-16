@@ -1,4 +1,4 @@
-package edinet
+package prh
 
 import (
 	"context"
@@ -13,11 +13,11 @@ type Client struct {
 
 func New() *Client {
 	return &Client{
-		baseURL: "https://disclosure2.edinet-fsa.go.jp",
+		baseURL: "https://avoindata.prh.fi",
 	}
 }
 
-func (c *Client) Name() string { return "edinet" }
+func (c *Client) Name() string { return "prh" }
 
 func (c *Client) FetchCompanies(ctx context.Context) ([]sources.Company, error) {
 	return nil, fmt.Errorf("ej implementerad ännen")

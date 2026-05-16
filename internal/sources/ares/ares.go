@@ -1,4 +1,4 @@
-package edinet
+package ares
 
 import (
 	"context"
@@ -13,11 +13,11 @@ type Client struct {
 
 func New() *Client {
 	return &Client{
-		baseURL: "https://disclosure2.edinet-fsa.go.jp",
+		baseURL: "https://ares.gov.cz",
 	}
 }
 
-func (c *Client) Name() string { return "edinet" }
+func (c *Client) Name() string { return "ares" }
 
 func (c *Client) FetchCompanies(ctx context.Context) ([]sources.Company, error) {
 	return nil, fmt.Errorf("ej implementerad ännen")
