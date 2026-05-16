@@ -31,3 +31,8 @@ func (c *SECClient) FetchFinancials(ctx context.Context, companyID string) ([]so
 	// TODO: Hämta company facts från https://data.sec.gov/submissions/CIK{cik}.json
 	return nil, fmt.Errorf("inte implementerad ännen")
 }
+
+func (c *SECClient) FetchProfile(ctx context.Context, companyID string) (*sources.Profile, error) {
+	// TODO: Hämta bolagsprofil — finns i SEC filing XML
+	return nil, fmt.Errorf("inte implementerad ännen")
+}

@@ -28,3 +28,8 @@ func (c *BVClient) FetchFinancials(ctx context.Context, companyID string) ([]sou
 	// TODO: Årsredovisningar finns, men många är PDF/digitala
 	return nil, fmt.Errorf("inte implementerad ännen")
 }
+
+func (c *BVClient) FetchProfile(ctx context.Context, companyID string) (*sources.Profile, error) {
+	// TODO: Bolagsfakta från Bolagsverket
+	return nil, fmt.Errorf("inte implementerad ännen")
+}
