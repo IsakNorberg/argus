@@ -8,20 +8,17 @@ import (
 	"github.com/IsakNorberg/argus/internal/database"
 	"github.com/IsakNorberg/argus/internal/sources"
 	"github.com/IsakNorberg/argus/internal/sources/brreg"
-	"github.com/IsakNorberg/argus/internal/sources/bundesanzeiger"
 	"github.com/IsakNorberg/argus/internal/sources/bolagsverket"
 	"github.com/IsakNorberg/argus/internal/sources/companieshouse"
 	"github.com/IsakNorberg/argus/internal/sources/cvr"
-	"github.com/IsakNorberg/argus/internal/sources/esef"
 	"github.com/IsakNorberg/argus/internal/sources/inpi"
 	"github.com/IsakNorberg/argus/internal/sources/kvk"
 	"github.com/IsakNorberg/argus/internal/sources/prh"
-	"github.com/IsakNorberg/argus/internal/sources/registro_mercantil"
 	"github.com/IsakNorberg/argus/internal/sources/sec"
 	"github.com/IsakNorberg/argus/internal/sources/yahoo"
 )
 
-var version = "0.1.0"
+var version = "0.2.0"
 
 func main() {
 	log.Println("🏛️  Argus — Den med 100 ögon")
@@ -42,38 +39,32 @@ func main() {
 		log.Fatal("❌ Schema-fel: ", err)
 	}
 
-	// Registrera alla officiella register (fundamentals)
-	officialSources := []sources.Source{
-		sec.New(),              // 🇺🇸 SEC (EDGAR)
-		bolagsverket.New(),     // 🇸🇪 Bolagsverket
-		brreg.New(),            // 🇳🇴 Brønnøysundregistrene
-		cvr.New(),              // 🇩🇰 CVR / Erhvervsstyrelsen
-		prh.New(),              // 🇫🇮 PRH
-		companieshouse.New(),   // 🇬🇧 Companies House
-		bundesanzeiger.New(),   // 🇩🇪 Bundesanzeiger
-		inpi.New(),             // 🇫🇷 INPI / BODACC
-		kvk.New(),              // 🇳🇱 KVK
-		esef.New(),             // 🇪🇺 ESEF (EU XBRL)
-		registro_mercantil.New(), // 🇪🇸 Registro Mercantil
+	// Registrera alla källor med öppen API
+	registerSources := []sources.Source{
+		sec.New(),              // 🇺🇸 SEC (EDGAR) — helt gratis
+		bolagsverket.New(),     // 🇸🇪 Bolagsverket — nyckel krävs
+		brreg.New(),            // 🇳🇴 Brreg — grundläggande auth
+		cvr.New(),              // 🇩🇰 CVR — helt gratis
+		prh.New(),              // 🇫🇮 PRH — helt gratis
+		companieshouse.New(),   // 🇬🇧 Companies House — helt gratis
+		inpi.New(),             // 🇫🇷 INPI — gratis
+		kvk.New(),              // 🇳🇱 KVK — nyckel krävs
 	}
 
 	// Yahoo för dagens kurs (separat)
-	_ = yahoo.New() // 📈 Yahoo Finance — KURSER
+	_ = yahoo.New() // 📈 Yahoo — KURSER
 
 	fmt.Printf("\n✅ Argus är redo!\n\n")
 	fmt.Printf("Databas: %s\n", dbPath)
-	fmt.Printf("Register: %d officiella källor (fundamentals)\n\n", len(officialSources))
-	fmt.Println("  🇺🇸 SEC (EDGAR)")
-	fmt.Println("  🇸🇪 Bolagsverket")
-	fmt.Println("  🇳🇴 Brønnøysundregistrene")
-	fmt.Println("  🇩🇰 CVR / Erhvervsstyrelsen")
-	fmt.Println("  🇫🇮 PRH")
-	fmt.Println("  🇬🇧 Companies House")
-	fmt.Println("  🇩🇪 Bundesanzeiger")
-	fmt.Println("  🇫🇷 INPI / BODACC")
-	fmt.Println("  🇳🇱 KVK")
-	fmt.Println("  🇪🇺 ESEF (EU XBRL)")
-	fmt.Println("  🇪🇸 Registro Mercantil")
-	fmt.Println("\n  📈 Yahoo Finance — dagens kurs (ej fundamentals)")
-	fmt.Println("\nNästa steg: Implementera fetchers per register.")
+	fmt.Printf("Register: %d källor med API\n\n", len(registerSources))
+	fmt.Println("  🟢 🇺🇸 SEC (EDGAR) — helt gratis")
+	fmt.Println("  🟡 🇸🇪 Bolagsverket — API-nyckel")
+	fmt.Println("  🟡 🇳🇴 Brreg — grundläggande auth")
+	fmt.Println("  🟢 🇩🇰 CVR — helt gratis")
+	fmt.Println("  🟢 🇫🇮 PRH — helt gratis")
+	fmt.Println("  🟢 🇬🇧 Companies House — helt gratis")
+	fmt.Println("  🟡 🇫🇷 INPI — gratis")
+	fmt.Println("  🟡 🇳🇱 KVK — API-nyckel")
+	fmt.Println("\n  📈 Yahoo — dagens kurs")
+	fmt.Println("\nNästa steg: Implementera fetchers.")
 }
