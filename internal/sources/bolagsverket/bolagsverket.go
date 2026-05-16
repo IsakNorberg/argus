@@ -9,11 +9,13 @@ import (
 
 // BVClient hämtar data från Bolagsverket API.
 type BVClient struct {
-	apiKey string
+	baseURL string
 }
 
-func New(apiKey string) *BVClient {
-	return &BVClient{apiKey: apiKey}
+func New() *BVClient {
+	return &BVClient{
+		baseURL: "https://bolagsverket.se",
+	}
 }
 
 func (c *BVClient) Name() string { return "bolagsverket" }

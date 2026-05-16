@@ -10,20 +10,18 @@ import (
 // SECClient hämtar data från SEC EDGAR API.
 type SECClient struct {
 	baseURL string
-	email   string // User-Agent krävs av SEC
 }
 
-func New(email string) *SECClient {
+func New() *SECClient {
 	return &SECClient{
 		baseURL: "https://data.sec.gov",
-		email:   email,
 	}
 }
 
 func (c *SECClient) Name() string { return "sec" }
 
 func (c *SECClient) FetchCompanies(ctx context.Context) ([]sources.Company, error) {
-	// TODO: Hämta CIK-listan från https://data.sec.gov/submissions/
+	// TODO: Hämta CIK-listan från https://www.sec.gov/Archives/edgar/cik-lookup-data.txt
 	return nil, fmt.Errorf("inte implementerad ännen")
 }
 
@@ -33,6 +31,6 @@ func (c *SECClient) FetchFinancials(ctx context.Context, companyID string) ([]so
 }
 
 func (c *SECClient) FetchProfile(ctx context.Context, companyID string) (*sources.Profile, error) {
-	// TODO: Hämta bolagsprofil — finns i SEC filing XML
+	// TODO: Hämta bolagsprofil från SEC filings
 	return nil, fmt.Errorf("inte implementerad ännen")
 }
