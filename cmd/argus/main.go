@@ -9,6 +9,7 @@ import (
 	"github.com/IsakNorberg/argus/internal/sources"
 	"github.com/IsakNorberg/argus/internal/sources/brreg"
 	"github.com/IsakNorberg/argus/internal/sources/bundesanzeiger"
+	"github.com/IsakNorberg/argus/internal/sources/bolagsverket"
 	"github.com/IsakNorberg/argus/internal/sources/companieshouse"
 	"github.com/IsakNorberg/argus/internal/sources/cvr"
 	"github.com/IsakNorberg/argus/internal/sources/esef"
@@ -17,7 +18,7 @@ import (
 	"github.com/IsakNorberg/argus/internal/sources/prh"
 	"github.com/IsakNorberg/argus/internal/sources/registro_mercantil"
 	"github.com/IsakNorberg/argus/internal/sources/sec"
-	"github.com/IsakNorberg/argus/internal/sources/bolagsverket"
+	"github.com/IsakNorberg/argus/internal/sources/yahoo"
 )
 
 var version = "0.1.0"
@@ -41,8 +42,8 @@ func main() {
 		log.Fatal("❌ Schema-fel: ", err)
 	}
 
-	// Registrera alla officiella register
-	sources_ := []sources.Source{
+	// Registrera alla officiella register (fundamentals)
+	officialSources := []sources.Source{
 		sec.New(),              // 🇺🇸 SEC (EDGAR)
 		bolagsverket.New(),     // 🇸🇪 Bolagsverket
 		brreg.New(),            // 🇳🇴 Brønnøysundregistrene
@@ -56,9 +57,12 @@ func main() {
 		registro_mercantil.New(), // 🇪🇸 Registro Mercantil
 	}
 
+	// Yahoo för dagens kurs (separat)
+	_ = yahoo.New() // 📈 Yahoo Finance — KURSER
+
 	fmt.Printf("\n✅ Argus är redo!\n\n")
 	fmt.Printf("Databas: %s\n", dbPath)
-	fmt.Printf("Register: %d officiella källor\n\n", len(sources_))
+	fmt.Printf("Register: %d officiella källor (fundamentals)\n\n", len(officialSources))
 	fmt.Println("  🇺🇸 SEC (EDGAR)")
 	fmt.Println("  🇸🇪 Bolagsverket")
 	fmt.Println("  🇳🇴 Brønnøysundregistrene")
@@ -70,5 +74,6 @@ func main() {
 	fmt.Println("  🇳🇱 KVK")
 	fmt.Println("  🇪🇺 ESEF (EU XBRL)")
 	fmt.Println("  🇪🇸 Registro Mercantil")
+	fmt.Println("\n  📈 Yahoo Finance — dagens kurs (ej fundamentals)")
 	fmt.Println("\nNästa steg: Implementera fetchers per register.")
 }

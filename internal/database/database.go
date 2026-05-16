@@ -99,6 +99,23 @@ func (db *DB) Init(ctx context.Context) error {
 		CREATE INDEX IF NOT EXISTS idx_financials_company ON financials(company_id);
 		CREATE INDEX IF NOT EXISTS idx_financials_period ON financials(period);
 		CREATE INDEX IF NOT EXISTS idx_financials_source ON financials(source);
+
+		CREATE TABLE IF NOT EXISTS price_quotes (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			argus_id TEXT NOT NULL,
+			ticker TEXT NOT NULL,
+			price REAL DEFAULT 0,
+			currency TEXT DEFAULT 'USD',
+			market_cap INTEGER DEFAULT 0,
+			volume INTEGER DEFAULT 0,
+			change_percent REAL DEFAULT 0,
+			source TEXT DEFAULT 'yahoo',
+			quote_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE(argus_id, source, quote_date)
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_quote_ticker ON price_quotes(ticker);
+		CREATE INDEX IF NOT EXISTS idx_quote_date ON price_quotes(quote_date);
 	`
 
 	_, err := db.sql.ExecContext(ctx, schemaSQL)
