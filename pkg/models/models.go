@@ -56,3 +56,19 @@ type SourceMetadata struct {
 	Status      string    `json:"status"` // "ok", "error", "partial"
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+// PriceQuote är en dagprisnotering från en kurskälla.
+type PriceQuote struct {
+	ID            int64     `json:"id"`
+	ArgusID       string    `json:"argus_id"`
+	Ticker        string    `json:"ticker"`
+	Price         float64   `json:"price"`
+	Currency      string    `json:"currency"`
+	MarketCap     int64     `json:"market_cap"`
+	Volume        int64     `json:"volume"`
+	ChangePercent float64   `json:"change_percent"`
+	Source        string    `json:"source"` // "yahoo", "eodhd", etc
+	QuoteDate     time.Time `json:"quote_date"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
