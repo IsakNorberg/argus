@@ -10,9 +10,16 @@ import (
 	"time"
 
 	"github.com/IsakNorberg/argus/internal/database"
+	"github.com/IsakNorberg/argus/internal/sources"
 	"github.com/IsakNorberg/argus/internal/sources/sec"
 	"github.com/IsakNorberg/argus/internal/sources/yahoo"
 	"github.com/IsakNorberg/argus/internal/store"
+	"github.com/IsakNorberg/argus/pkg/models"
+
+	// Nordic sources
+	"github.com/IsakNorberg/argus/internal/sources/prh"
+	"github.com/IsakNorberg/argus/internal/sources/brreg"
+	"github.com/IsakNorberg/argus/internal/sources/cvr"
 )
 
 var version = "0.4.2"
@@ -94,9 +101,18 @@ func runFetch() {
 		yahooClient := yahoo.New()
 		yahooStore := store.NewYahooStore(db, yahooClient)
 		runYahooFetch(ctx, yahooStore, *tickers)
+	case "prh":
+		prhClient := prh.New()
+		runNordicFetch(ctx, db, prhClient, *tickers, *all, "prh", "FI", "HEX")
+	case "brreg":
+		brregClient := brreg.New()
+		runNordicFetch(ctx, db, brregClient, *tickers, *all, "brreg", "NO", "OSE")
+	case "cvr":
+		cvrClient := cvr.New()
+		runNordicFetch(ctx, db, cvrClient, *tickers, *all, "cvr", "DK", "CSE")
 	default:
 		fmt.Fprintf(os.Stderr, "❌ Okänd källa: %s\n", sourceName)
-		fmt.Fprintln(os.Stderr, "   tillgängliga: sec, yahoo")
+		fmt.Fprintln(os.Stderr, "   tillgängliga: sec, yahoo, prh, brreg, cvr")
 		os.Exit(1)
 	}
 }
@@ -184,6 +200,61 @@ func splitTickers(raw string) []string {
 
 // --- STATUS KOMMANDO ---
 
+func runNordicFetch(ctx context.Context, db database.DB, src sources.Source, tickers string, all bool, srcName, country, exchange string) {
+	fmt.Printf("⏳ Hämtar bolag från %s...\n", strings.ToUpper(srcName))
+
+	// Enkel wrapper: hämta bolag → spara → hämta finansiell data
+	companies, err := src.FetchCompanies(ctx)
+	if err != nil {
+		fmt.Printf("❌ Hämta bolag: %v\n", err)
+		os.Exit(1)
+	}
+
+	if !all && tickers != "" {
+		// Filtrera efter angivna tickers
+		tickerList := splitTickers(tickers)
+		tickerSet := make(map[string]bool)
+		for _, t := range tickerList {
+			tickerSet[t] = true
+		}
+		var filtered []sources.Company
+		for _, c := range companies {
+			if tickerSet[strings.ToUpper(c.Ticker)] {
+				filtered = append(filtered, c)
+			}
+		}
+		companies = filtered
+	}
+
+	fmt.Printf("✅ %d bolag hittade\n", len(companies))
+
+	if all && len(companies) > 100 {
+		fmt.Printf("⚠️  Sparar första 100 av %d (använd --ticker för specifika)\n", len(companies))
+		companies = companies[:100]
+	}
+
+	// Spara bolag
+	saved := 0
+	for _, c := range companies {
+		c.Country = country
+		c.Exchange = exchange
+
+		// Upsert company
+		if _, err := db.UpsertCompany(ctx, &models.Company{
+			Name:       c.Name,
+			Ticker:     c.Ticker,
+			Country:    c.Country,
+			Exchange:   c.Exchange,
+			Industry:   c.Industry,
+		}); err != nil {
+			continue
+		}
+		saved++
+	}
+
+	fmt.Printf("✅ %d bolag sparade till DB\n", saved)
+}
+
 func runStatus() {
 	fmt.Println("🏛️  Argus — Registerkällor")
 	fmt.Println()
@@ -192,20 +263,21 @@ func runStatus() {
 		name   string
 		status string
 	}{
-		{"🇺🇸", "SEC EDGAR", "🟢 Verifierad"},
-		{"🇳🇴", "Brreg", "🟢 Verifierad"},
-		{"🇸🇪", "Bolagsverket", "🟡 Nyckel"},
-		{"🇯🇵", "EDINET", "🟡 API-söks"},
-		{"🇩🇰", "CVR", "❌ 403"},
-		{"🇫🇮", "PRH", "❌ 404"},
-		{"🇬🇧", "Companies House", "❌ 403"},
-		{"🇫🇷", "INPI", "❌ 403"},
-		{"🇳🇱", "KVK", "❌ Testas"},
-		{"🇨🇭", "Zefix", "❌ 000"},
-		{"🇮🇪", "CRO", "❌ 403"},
-		{"🇨🇦", "SEDAR+", "🟡 Sida"},
-		{"🇨🇿", "ARES", "❌ HTML SPA"},
-		{"🇵🇱", "KRS", "❌ 302"},
+		{"🇺🇸", "SEC EDGAR", "🟢 Implementerad"},
+		{"🇫🇮", "PRH", "🟢 Implementerad"},
+		{"🇳🇴", "Brreg", "🟢 Implementerad"},
+		{"🇩🇰", "CVR", "🟡 Bolag OK, finansiell TBD"},
+		{"🇸🇪", "Bolagsverket", "🟡 Stub (API-nyckel)"},
+		{"🇬🇧", "Companies House", "⏳ Stub"},
+		{"🇨🇦", "SEDAR+", "⏳ Stub"},
+		{"🇯🇵", "EDINET", "⏳ Stub"},
+		{"🇫🇷", "INPI", "⏳ Stub"},
+		{"🇩🇪", "KRS", "⏳ Stub"},
+		{"🇳🇱", "KVK", "⏳ Stub"},
+		{"🇨🇭", "Zefix", "⏳ Stub"},
+		{"🇮🇪", "CRO", "⏳ Stub"},
+		{"🇦🇹", "ARES", "⏳ Stub"},
+		{"🇵🇱", "KRS", "⏳ Stub"},
 	}
 
 	for _, s := range sources {
