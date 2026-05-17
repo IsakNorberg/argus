@@ -3,30 +3,36 @@ package ares
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/IsakNorberg/argus/internal/sources"
 )
 
+// Client for ARES (Czech Republic)
+// API: https://ares.gov.cz
+// Auth: None, but uses complex nested JSON responses
 type Client struct {
-	baseURL string
+	client   *http.Client
+	lastCall time.Time
 }
 
 func New() *Client {
 	return &Client{
-		baseURL: "https://ares.gov.cz",
+		client: &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
 func (c *Client) Name() string { return "ares" }
 
-func (c *Client) FetchCompanies(ctx context.Context) ([]sources.Company, error) {
-	return nil, fmt.Errorf("ej implementerad ännen")
+func (c *Client) FetchCompanies(_ context.Context) ([]sources.Company, error) {
+	return nil, fmt.Errorf("ares: complex API — no simple company list endpoint available")
 }
 
-func (c *Client) FetchFinancials(ctx context.Context, companyID string) ([]sources.Financials, error) {
-	return nil, fmt.Errorf("ej implementerad ännen")
+func (c *Client) FetchFinancials(_ context.Context, _ string) ([]sources.Financials, error) {
+	return nil, fmt.Errorf("ares: financial data requires nested API calls")
 }
 
-func (c *Client) FetchProfile(ctx context.Context, companyID string) (*sources.Profile, error) {
-	return nil, fmt.Errorf("ej implementerad ännen")
+func (c *Client) FetchProfile(_ context.Context, _ string) (*sources.Profile, error) {
+	return nil, fmt.Errorf("ares: profile requires parsing complex JSON structure")
 }
